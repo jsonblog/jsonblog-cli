@@ -82,9 +82,13 @@ prog
     "build",
     "Builds your blog to /build (in default generator, check readme on how to use others)"
   )
+  .option(
+    "--generator <name>",
+    "Name of the generator e.g. jsonblog-generator-boilerplate"
+  )
   .action(async function(args, options, logger) {
     try {
-      const generator = basicGenerator; // or meta data generator
+      const generator = getGenerator(options.generator);
       await build(generator, blogExample);
     } catch (e) {}
   })
