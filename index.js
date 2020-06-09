@@ -1,22 +1,27 @@
 #!/usr/bin/env node
 const prog = require("caporal");
 const fs = require("fs-extra");
-const basicGenerator = require("jsonblog-generator-basic");
+const basicGenerator = require("jsonblog-generator-boilerplate");
 const schema = require("jsonblog-schema");
 const express = require("express");
 const watch = require("watch");
 
-const BUILD_PATH = "./build";
+const BUILD_PATH = `${process.cwd()}/./build`;
+const DEFAULT_GENERATOR = "jsonblog-generator-boilerplate";
 
 const blogExample = schema.example;
 const validate = schema.validate;
+
+function requireUncached(module) {
+  delete require.cache[require.resolve(module)];
+  return require(module);
+}
 
 const build = async (generator, blog) => {
   validate(blog, async err => {
     if (err) {
       console.log("validation failed", err);
     } else {
-      console.log("Validation success");
       const files = await generator(blog);
 
       // Clean up build dir  and make again
@@ -31,10 +36,39 @@ const build = async (generator, blog) => {
   });
 };
 
+const getGenerator = async name => {
+  let generator;
+
+  // Try load a theme from current directory
+  try {
+    generator = requireUncached(`${process.cwd()}/index.js`);
+  } catch (e) {}
+
+  const generatorName = name || DEFAULT_GENERATOR;
+
+  // require locally if in theme directory
+  if (typeof generator !== "function") {
+    try {
+      generator = require(generatorName);
+    } catch (e) {
+      // supplied generator not found
+      console.log(
+        "Supplied generator not found (try npm -g i jsonblog-generator-xxxxx)"
+      );
+      console.log("falling back to default");
+      generator = require(DEFAULT_GENERATOR);
+    }
+  }
+  // require package, fail if not found
+
+  // require default
+  return generator;
+};
+
 prog.version("1.0.0");
 
 prog
-  .command("init", "Downloads an example blog.json")
+  .command("init", "Downloadsaa an example blog.json")
   .action(function(args, options, logger) {
     // TODO - Check if there is already a blog.json. Warn is overide.
     fs.writeFileSync(
@@ -55,26 +89,34 @@ prog
     } catch (e) {}
   })
   .command("serve", "Runs locally on your computer")
+  .option(
+    "--generator <name>",
+    "Name of the generator e.g. jsonblog-generator-boilerplate"
+  )
   .action(function(args, options, logger) {
-    let blog = JSON.parse(fs.readFileSync("./blog.json", "utf8"));
+    let blog = JSON.parse(
+      fs.readFileSync(`${process.cwd()}/./blog.json`, "utf8")
+    );
     // TODO - ERROR - can't find a blog.json
+
     validate(blog, async err => {
       if (err) {
         console.log("Validation of blog.json failed", err);
       } else {
-        console.log("Validation success");
         watch.watchTree(
-          "./",
+          process.cwd(),
           {
             filter: (f, d) => {
-              if (["node_modules", "build", ".git"].indexOf(f) !== -1) {
+              const excludeDirs = ["node_modules", "build", ".git"];
+              if (excludeDirs.some(element => f.includes(element))) {
                 return false;
               } else {
                 return true;
               }
             }
           },
-          function(f, curr, prev) {
+          async (f, curr, prev) => {
+            const generator = getGenerator(options.generator);
             if (typeof f == "object" && prev === null && curr === null) {
               // Finished walking the tree
             } else if (prev === null) {
@@ -82,11 +124,9 @@ prog
             } else if (curr.nlink === 0) {
               // f was removed
             } else {
-              if (f === "blog.json") {
-                console.log("blog.json has changed, rebuild");
-                blog = JSON.parse(fs.readFileSync("./blog.json", "utf8"));
-                build(basicGenerator, blog);
-              }
+              console.log("blog.json has changed, rebuild");
+              blog = JSON.parse(await fs.readFileSync("./blog.json", "utf8"));
+              await build(generator, blog);
             }
           }
         );
