@@ -18,10 +18,12 @@ function requireUncached(module) {
 }
 
 const build = async (generator, blog) => {
+  console.log("asdasd", generator);
   validate(blog, async err => {
     if (err) {
       console.log("validation failed", err);
     } else {
+      console.log("carazy", generator);
       const files = await generator(blog);
 
       // Clean up build dir  and make again
@@ -132,6 +134,7 @@ prog
           },
           async (f, curr, prev) => {
             const generator = getGenerator(options.generator);
+            console.log("np", generator);
             if (typeof f == "object" && prev === null && curr === null) {
               // Finished walking the tree
             } else if (prev === null) {
@@ -141,6 +144,7 @@ prog
             } else {
               console.log("blog.json has changed, rebuild");
               blog = JSON.parse(await fs.readFileSync("./blog.json", "utf8"));
+              console.log("np", generator);
               await build(generator, blog);
             }
           }
