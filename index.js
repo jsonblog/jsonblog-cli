@@ -36,15 +36,23 @@ const build = async (generator, blog) => {
   });
 };
 
+const getBlog = () => {
+  let blog;
+};
+
 const getGenerator = async name => {
   let generator;
 
   // Try load a theme from current directory
   try {
     generator = requireUncached(`${process.cwd()}/index.js`);
-  } catch (e) {}
+  } catch (e) {
+    console.log("failed loading local generator");
+  }
 
   const generatorName = name || DEFAULT_GENERATOR;
+
+  console.log("generatorName", generatorName);
 
   // require locally if in theme directory
   if (typeof generator !== "function") {
@@ -60,6 +68,9 @@ const getGenerator = async name => {
     }
   }
   // require package, fail if not found
+
+  console.log("what is going on");
+  console.log(generator);
 
   // require default
   return generator;
