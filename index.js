@@ -101,8 +101,9 @@ prog
   )
   .action(async function(args, options, logger) {
     try {
-      const generator = getGenerator(options.generator);
-      await build(generator, blogExample);
+      const generator = await getGenerator(options.generator);
+      blog = JSON.parse(await fs.readFileSync("./blog.json", "utf8"));
+      await build(generator, blog);
     } catch (e) {}
   })
   .command("serve", "Runs locally on your computer")
@@ -133,7 +134,7 @@ prog
             }
           },
           async (f, curr, prev) => {
-            const generator = getGenerator(options.generator);
+            const generator = await getGenerator(options.generator);
             console.log("np", generator);
             if (typeof f == "object" && prev === null && curr === null) {
               // Finished walking the tree
