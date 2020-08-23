@@ -19,11 +19,10 @@ function requireUncached(module) {
 
 const build = async (generator, blog) => {
   console.log("asdasd", generator);
-  validate(blog, async err => {
+  validate(blog, async (err) => {
     if (err) {
       console.log("validation failed", err);
     } else {
-      console.log("carazy", generator);
       const files = await generator(blog);
 
       // Clean up build dir  and make again
@@ -31,7 +30,7 @@ const build = async (generator, blog) => {
       fs.mkdirSync(BUILD_PATH);
 
       // Now write files given by the generator
-      files.forEach(file => {
+      files.forEach((file) => {
         fs.outputFileSync(`${BUILD_PATH}/${file.name}`, file.content, "utf8");
       });
     }
@@ -42,7 +41,7 @@ const getBlog = () => {
   let blog;
 };
 
-const getGenerator = async name => {
+const getGenerator = async (name) => {
   let generator;
 
   // Try load a theme from current directory
@@ -71,7 +70,6 @@ const getGenerator = async name => {
   }
   // require package, fail if not found
 
-  console.log("what is going on");
   console.log(generator);
 
   // require default
@@ -81,8 +79,8 @@ const getGenerator = async name => {
 prog.version("1.0.0");
 
 prog
-  .command("init", "Downloadsaa an example blog.json")
-  .action(function(args, options, logger) {
+  .command("init", "Downloads an example blog.json")
+  .action(function (args, options, logger) {
     // TODO - Check if there is already a blog.json. Warn is overide.
     fs.writeFileSync(
       "blog.json",
@@ -99,7 +97,7 @@ prog
     "--generator <name>",
     "Name of the generator e.g. jsonblog-generator-boilerplate"
   )
-  .action(async function(args, options, logger) {
+  .action(async function (args, options, logger) {
     try {
       const generator = await getGenerator(options.generator);
       blog = JSON.parse(await fs.readFileSync("./blog.json", "utf8"));
@@ -111,13 +109,13 @@ prog
     "--generator <name>",
     "Name of the generator e.g. jsonblog-generator-boilerplate"
   )
-  .action(function(args, options, logger) {
+  .action(function (args, options, logger) {
     let blog = JSON.parse(
       fs.readFileSync(`${process.cwd()}/./blog.json`, "utf8")
     );
     // TODO - ERROR - can't find a blog.json
 
-    validate(blog, async err => {
+    validate(blog, async (err) => {
       if (err) {
         console.log("Validation of blog.json failed", err);
       } else {
@@ -126,12 +124,12 @@ prog
           {
             filter: (f, d) => {
               const excludeDirs = ["node_modules", "build", ".git"];
-              if (excludeDirs.some(element => f.includes(element))) {
+              if (excludeDirs.some((element) => f.includes(element))) {
                 return false;
               } else {
                 return true;
               }
-            }
+            },
           },
           async (f, curr, prev) => {
             const generator = await getGenerator(options.generator);
