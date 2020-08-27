@@ -1,6 +1,6 @@
 # Json Blog CLI
 
-This is very much a tooling lib, Json Blog is meant to be language agnostic. Javascript sucks,
+This is very much a tooling lib, Json Blog is meant to be language agnostic. Javascript sucks™,
 but suits some needs perfectly. =D
 
 ```
