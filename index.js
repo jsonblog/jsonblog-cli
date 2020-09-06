@@ -55,7 +55,7 @@ const getGenerator = async (name) => {
 
   console.log("generatorName", generatorName);
 
-  // require locally if in theme directory
+  // require globally if not in generator directory
   if (typeof generator !== "function") {
     try {
       generator = require(generatorName);
@@ -151,7 +151,7 @@ prog
 
         const app = express();
         app.use(express.static("build"));
-        app.listen(4321, () => console.log("Blog listening on port 4321!"));
+        app.listen(4322, () => console.log("Blog listening on port 4321!"));
       }
     });
   });
