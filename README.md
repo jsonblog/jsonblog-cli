@@ -30,7 +30,7 @@ but suits some needs perfectly. =D
 ### Getting started
 
 ```
-npm install -g jsonblog-blog
+npm install -g jsonblog-cli
 blog init
 blog build
 // Open the output locally
