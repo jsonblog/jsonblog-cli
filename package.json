@@ -12,8 +12,8 @@
     "caporal": "^1.4.0",
     "express": "^4.17.1",
     "fs-extra": "^9.0.0",
-    "jsonblog-generator-boilerplate": "1.0.10",
-    "jsonblog-schema": "0.0.6",
+    "jsonblog-generator-boilerplate": "1.0.13",
+    "jsonblog-schema": "0.0.7",
     "watch": "^1.0.2"
   },
   "bin": {
