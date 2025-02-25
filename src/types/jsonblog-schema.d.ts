@@ -1,6 +1,6 @@
 declare module 'jsonblog-schema' {
   interface ValidationResult {
-    valid: boolean;
+    success: boolean;
     error?: string;
   }
 
@@ -43,10 +43,9 @@ declare module 'jsonblog-schema' {
   }
 
   interface Schema {
-    validate: (
+    validateBlog: (
       blog: Blog,
-      callback: (error: Error | null, result: ValidationResult | null) => void
-    ) => void;
+    ) => ValidationResult;
     example: Blog;
   }
 
