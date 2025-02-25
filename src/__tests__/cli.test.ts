@@ -1,5 +1,6 @@
 import { Command } from 'commander';
 
+/* eslint-disable @typescript-eslint/no-empty-function */
 describe('CLI', () => {
   let program: Command;
 
