@@ -32,7 +32,7 @@ jsonblog generate path/to/blog.json
 jsonblog watch path/to/blog.json
 ```
 
-Hosted example - [https://lordajax.com/json-blog-20.html](https://lordajax.com/json-blog-20.html) 
+Hosted example - [https://lordajax.com/json-blog-20.html](https://lordajax.com/json-blog-20.html)
 
 ## JsonBlog Schema
 
@@ -97,6 +97,7 @@ interface Blog {
 ### Schema Versioning
 
 The schema follows semantic versioning:
+
 - MAJOR: Breaking changes to required fields
 - MINOR: New optional fields or features
 - PATCH: Documentation updates or bug fixes
@@ -134,12 +135,12 @@ Here's a basic example of a blog configuration file:
     {
       "title": "Markdown Post",
       "content": "# My First Post\n\nWelcome to my blog!",
-      "publishedDate": "2025-02-25"
+      "createdAt": "2025-02-25"
     },
     {
       "title": "Remote Content",
       "contentUrl": "https://example.com/posts/remote-post.md",
-      "publishedDate": "2025-02-25"
+      "createdAt": "2025-02-25"
     }
   ]
 }
