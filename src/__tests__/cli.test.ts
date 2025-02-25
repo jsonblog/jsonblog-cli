@@ -1,7 +1,6 @@
 import { Command } from 'commander';
-import path from 'path';
 
-describe('JsonBlog CLI', () => {
+describe('CLI', () => {
   let program: Command;
 
   beforeEach(() => {
@@ -13,13 +12,13 @@ describe('JsonBlog CLI', () => {
     expect(program.commands.length).toBeGreaterThan(0);
   });
 
-  test('should handle generate command', () => {
-    const generateCmd = program.command('generate');
-    expect(generateCmd.name()).toBe('generate');
+  test('should handle build command', () => {
+    const buildCmd = program.command('build');
+    expect(buildCmd.name()).toBe('build');
   });
 
-  test('should handle watch command', () => {
-    const watchCmd = program.command('watch');
-    expect(watchCmd.name()).toBe('watch');
+  test('should handle serve command', () => {
+    const serveCmd = program.command('serve');
+    expect(serveCmd.name()).toBe('serve');
   });
 });
