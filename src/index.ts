@@ -23,22 +23,23 @@ function requireUncached(module: string) {
 }
 
 const build = async (generator: any, blog: any) => {
-  schema.validateBlog(blog).then(({ success, error }: ValidationResult) => {
-    if (!success) {
-      console.error('Validation failed:', error);
-    } else {
-      const files = generator(blog);
-
-      // Clean up build dir and make again
-      fs.removeSync(BUILD_PATH);
-      fs.mkdirSync(BUILD_PATH);
-
-      // Now write files given by the generator
-      files.forEach((file: { name: string; content: string }) => {
-        fs.outputFileSync(`${BUILD_PATH}/${file.name}`, file.content, 'utf8');
-      });
-      console.log('Build completed successfully!');
+  schema.validate(blog, (error: Error | null, result: ValidationResult | null) => {
+    if (error || !result?.success) {
+      console.error('Validation failed:', error || result?.error);
+      return;
     }
+
+    const files = generator(blog);
+
+    // Clean up build dir and make again
+    fs.removeSync(BUILD_PATH);
+    fs.mkdirSync(BUILD_PATH);
+
+    // Now write files given by the generator
+    files.forEach((file: { name: string; content: string }) => {
+      fs.outputFileSync(`${BUILD_PATH}/${file.name}`, file.content, 'utf8');
+    });
+    console.log('Build completed successfully!');
   });
 };
 
@@ -70,7 +71,7 @@ const program = new Command();
 program
   .name('jsonblog')
   .description('CLI tool for JsonBlog')
-  .version('2.3.0');
+  .version('2.4.0');
 
 program
   .command('init')
@@ -98,10 +99,11 @@ program
   .description('Serve the blog')
   .option('-p, --port <number>', 'Port to serve on', '3000')
   .action((options) => {
+    const port = parseInt(options.port, 10);
     const app = express();
     app.use(express.static(BUILD_PATH));
-    app.listen(options.port, () => {
-      console.log(`Serving blog at http://localhost:${options.port}`);
+    app.listen(port, () => {
+      console.log(`Serving blog at http://localhost:${port}`);
     });
   });
 

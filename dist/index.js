@@ -19,21 +19,20 @@ function requireUncached(module) {
     return require(module);
 }
 const build = async (generator, blog) => {
-    schema.validateBlog(blog).then(({ success, error }) => {
-        if (!success) {
-            console.error('Validation failed:', error);
+    schema.validate(blog, (error, result) => {
+        if (error || !(result === null || result === void 0 ? void 0 : result.valid)) {
+            console.error('Validation failed:', error || (result === null || result === void 0 ? void 0 : result.error));
+            return;
         }
-        else {
-            const files = generator(blog);
-            // Clean up build dir and make again
-            fs_extra_1.default.removeSync(BUILD_PATH);
-            fs_extra_1.default.mkdirSync(BUILD_PATH);
-            // Now write files given by the generator
-            files.forEach((file) => {
-                fs_extra_1.default.outputFileSync(`${BUILD_PATH}/${file.name}`, file.content, 'utf8');
-            });
-            console.log('Build completed successfully!');
-        }
+        const files = generator(blog);
+        // Clean up build dir and make again
+        fs_extra_1.default.removeSync(BUILD_PATH);
+        fs_extra_1.default.mkdirSync(BUILD_PATH);
+        // Now write files given by the generator
+        files.forEach((file) => {
+            fs_extra_1.default.outputFileSync(`${BUILD_PATH}/${file.name}`, file.content, 'utf8');
+        });
+        console.log('Build completed successfully!');
     });
 };
 const getBlog = (file) => {
@@ -61,7 +60,7 @@ const program = new commander_1.Command();
 program
     .name('jsonblog')
     .description('CLI tool for JsonBlog')
-    .version('2.3.0');
+    .version('2.4.0');
 program
     .command('init')
     .description('Create an example blog.json')
@@ -86,10 +85,11 @@ program
     .description('Serve the blog')
     .option('-p, --port <number>', 'Port to serve on', '3000')
     .action((options) => {
+    const port = parseInt(options.port, 10);
     const app = (0, express_1.default)();
     app.use(express_1.default.static(BUILD_PATH));
-    app.listen(options.port, () => {
-        console.log(`Serving blog at http://localhost:${options.port}`);
+    app.listen(port, () => {
+        console.log(`Serving blog at http://localhost:${port}`);
     });
 });
 program
