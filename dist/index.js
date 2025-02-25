@@ -23,11 +23,12 @@ const requireUncached = (module) => {
 const validateBlog = (blog) => {
     return new Promise((resolve, reject) => {
         schema.validate(blog, (err, result) => {
+            var _a;
             if (err) {
                 reject(err);
             }
             else {
-                resolve(result?.valid ?? false);
+                resolve((_a = result === null || result === void 0 ? void 0 : result.valid) !== null && _a !== void 0 ? _a : false);
             }
         });
     });
@@ -136,7 +137,7 @@ program
     .action(async (blogFile, options) => {
     try {
         const app = (0, express_1.default)();
-        const port = parseInt(options.port, 10);
+        const port = parseInt(options.port || '3000', 10);
         // Initial build
         const generator = await getGenerator(options.generator);
         const blog = await getBlog(blogFile);
@@ -146,10 +147,10 @@ program
         // Watch for changes
         const watcher = chokidar_1.default.watch([blogFile, '*.js'], {
             ignored: /(^|[\/\\])\../,
-            persistent: true
+            persistent: true,
         });
-        watcher.on('change', async (path) => {
-            console.log(chalk_1.default.blue(`File ${path} has been changed`));
+        watcher.on('change', async (watchPath) => {
+            console.log(chalk_1.default.blue(`File ${watchPath} has been changed`));
             try {
                 const generator = await getGenerator(options.generator);
                 const blog = await getBlog(blogFile);

@@ -22,6 +22,11 @@ interface Generator {
   (blog: any, arg: string): Promise<BlogFile[]>;
 }
 
+interface CommandOptions {
+  generator?: string;
+  port?: string;
+}
+
 const requireUncached = (module: string): any => {
   delete require.cache[require.resolve(module)];
   return require(module);
@@ -157,7 +162,7 @@ program
   .description('Builds your blog to /build')
   .argument('<blogFile>', 'Path to blog.json file')
   .option('-g, --generator <n>', 'Name of the generator')
-  .action(async (blogFile, options) => {
+  .action(async (blogFile: string, options: CommandOptions) => {
     try {
       const generator = await getGenerator(options.generator);
       const blog = await getBlog(blogFile);
@@ -174,10 +179,10 @@ program
   .argument('<blogFile>', 'Path to blog.json file')
   .option('-p, --port <number>', 'Port to run on', '3000')
   .option('-g, --generator <n>', 'Name of the generator')
-  .action(async (blogFile, options) => {
+  .action(async (blogFile: string, options: CommandOptions) => {
     try {
       const app = express();
-      const port = parseInt(options.port, 10);
+      const port = parseInt(options.port || '3000', 10);
 
       // Initial build
       const generator = await getGenerator(options.generator);
@@ -193,8 +198,8 @@ program
         persistent: true,
       });
 
-      watcher.on('change', async (path) => {
-        console.log(chalk.blue(`File ${path} has been changed`));
+      watcher.on('change', async (watchPath: string) => {
+        console.log(chalk.blue(`File ${watchPath} has been changed`));
         try {
           const generator = await getGenerator(options.generator);
           const blog = await getBlog(blogFile);

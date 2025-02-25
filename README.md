@@ -75,11 +75,6 @@ Your blog configuration should be a JSON file that follows the JsonBlog schema. 
 }
 ```
 
-## Dependencies
-
-This project uses:
-- [jsonblog-schema](https://github.com/jsonblog/jsonblog-schema) for blog validation
-
 ## Development
 
 ### Prerequisites
@@ -146,6 +141,7 @@ Want to create your own blog theme? It's easy! A generator is just a package tha
 Your generator just needs to export a function that takes a blog config and outputs HTML files. The boilerplate handles all the complex stuff like Markdown rendering and file management.
 
 Example generators:
+
 - `jsonblog-generator-minimal` - A minimal, typography-focused theme
 - `jsonblog-generator-bootstrap` - A Bootstrap-based theme
 - Create your own!
