@@ -8,6 +8,11 @@
   },
   "posts": [
     {
+      "title": "JsonBlog v2: A Modern Approach to JSON-Driven Static Blogs",
+      "source": "samples/jsonblog-v2.md",
+      "publishedDate": "2025-02-25"
+    },
+    {
       "title": "An Open Source Computer vision model to identify the Australian Aboriginal Flag [Tutorial]",
       "source": "https://raw.githubusercontent.com/australia/aboriginal-flag-cv-model/master/README.md",
       "publishedDate": "2020-09-05"

@@ -10,16 +10,31 @@ const express_1 = __importDefault(require("express"));
 const chalk_1 = __importDefault(require("chalk"));
 const chokidar_1 = __importDefault(require("chokidar"));
 const path_1 = __importDefault(require("path"));
-const jsonblog_schema_1 = __importDefault(require("jsonblog-schema"));
+// Import legacy modules using require since they're CommonJS
+const basicGenerator = require('jsonblog-generator-boilerplate');
+const schema = require('jsonblog-schema');
 const BUILD_PATH = path_1.default.join(process.cwd(), 'build');
 const DEFAULT_GENERATOR = 'jsonblog-generator-boilerplate';
 const requireUncached = (module) => {
     delete require.cache[require.resolve(module)];
     return require(module);
 };
+// Promisify the schema.validate function
+const validateBlog = (blog) => {
+    return new Promise((resolve, reject) => {
+        schema.validate(blog, (err, result) => {
+            if (err) {
+                reject(err);
+            }
+            else {
+                resolve(result?.valid ?? false);
+            }
+        });
+    });
+};
 const build = async (generator, blog) => {
     try {
-        const isValid = await jsonblog_schema_1.default.validate(blog);
+        const isValid = await validateBlog(blog);
         if (!isValid) {
             console.error(chalk_1.default.red('Blog validation failed'));
             return;
@@ -89,7 +104,7 @@ program
     if (await fs_extra_1.default.pathExists(blogPath)) {
         console.log(chalk_1.default.yellow('Warning: blog.json already exists. Overwriting...'));
     }
-    await fs_extra_1.default.writeFile(blogPath, JSON.stringify(jsonblog_schema_1.default.example, null, 2), 'utf8');
+    await fs_extra_1.default.writeFile(blogPath, JSON.stringify(schema.example, null, 2), 'utf8');
     console.log(chalk_1.default.green('Created file blog.json'));
 });
 program
