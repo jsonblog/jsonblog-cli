@@ -23,12 +23,12 @@ describe('CLI', () => {
   });
 
   test('should handle build command', () => {
-    const buildCmd = program.commands.find(cmd => cmd.name() === 'build');
+    const buildCmd = program.commands.find((cmd) => cmd.name() === 'build');
     expect(buildCmd?.name()).toBe('build');
   });
 
   test('should handle serve command', () => {
-    const serveCmd = program.commands.find(cmd => cmd.name() === 'serve');
+    const serveCmd = program.commands.find((cmd) => cmd.name() === 'serve');
     expect(serveCmd?.name()).toBe('serve');
   });
 });
