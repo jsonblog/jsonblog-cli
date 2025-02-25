@@ -4,7 +4,10 @@ declare module 'jsonblog-schema' {
   }
 
   interface Schema {
-    validate: (blog: any, callback: (error: Error | null, result: ValidationResult | null) => void) => void;
+    validate: (
+      blog: any,
+      callback: (error: Error | null, result: ValidationResult | null) => void
+    ) => void;
     example: any;
   }
 

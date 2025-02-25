@@ -30,17 +30,24 @@ const requireUncached = (module: string): any => {
 // Promisify the schema.validate function
 const validateBlog = (blog: any): Promise<boolean> => {
   return new Promise((resolve, reject) => {
-    schema.validate(blog, (err: Error | null, result: { valid: boolean } | null) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(result?.valid ?? false);
+    schema.validate(
+      blog,
+      (err: Error | null, result: { valid: boolean } | null) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result?.valid ?? false);
+        }
       }
-    });
+    );
   });
 };
 
-const build = async (generator: Generator, blog: any, blogPath: string): Promise<void> => {
+const build = async (
+  generator: Generator,
+  blog: any,
+  blogPath: string
+): Promise<void> => {
   try {
     const isValid = await validateBlog(blog);
     if (!isValid) {
@@ -50,7 +57,7 @@ const build = async (generator: Generator, blog: any, blogPath: string): Promise
 
     console.log('Blog data:', JSON.stringify(blog, null, 2));
     console.log('Generator type:', typeof generator);
-    
+
     // Use the directory containing blog.json as the base path
     const basePath = path.dirname(blogPath);
     const files = await generator(blog, basePath);
@@ -130,11 +137,13 @@ program
   .description('Creates an example blog.json')
   .action(async () => {
     const blogPath = path.join(process.cwd(), 'blog.json');
-    
+
     if (await fs.pathExists(blogPath)) {
-      console.log(chalk.yellow('Warning: blog.json already exists. Overwriting...'));
+      console.log(
+        chalk.yellow('Warning: blog.json already exists. Overwriting...')
+      );
     }
-    
+
     await fs.writeFile(
       blogPath,
       JSON.stringify(schema.example, null, 2),
@@ -169,7 +178,7 @@ program
     try {
       const app = express();
       const port = parseInt(options.port, 10);
-      
+
       // Initial build
       const generator = await getGenerator(options.generator);
       const blog = await getBlog(blogFile);
@@ -181,7 +190,7 @@ program
       // Watch for changes
       const watcher = chokidar.watch([blogFile, '*.js'], {
         ignored: /(^|[\/\\])\../,
-        persistent: true
+        persistent: true,
       });
 
       watcher.on('change', async (path) => {
