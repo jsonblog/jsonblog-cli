@@ -19,8 +19,8 @@ function requireUncached(module) {
     return require(module);
 }
 const build = async (generator, blog) => {
-    schema.validate(blog, (error, result) => {
-        if (error || !(result === null || result === void 0 ? void 0 : result.valid)) {
+    schema.validateBlog(blog, (error, result) => {
+        if (error || !(result === null || result === void 0 ? void 0 : result.success)) {
             console.error('Validation failed:', error || (result === null || result === void 0 ? void 0 : result.error));
             return;
         }
