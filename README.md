@@ -1,6 +1,11 @@
-# JsonBlog CLI v2
+# JsonBlog CLI
 
-A modern CLI tool for generating static blogs from JSON files. This tool is language-agnostic and allows you to use custom generators to create your blog exactly how you want it.
+[![npm version](https://badge.fury.io/js/jsonblog-cli.svg)](https://badge.fury.io/js/jsonblog-cli)
+[![CI](https://github.com/jsonblog/jsonblog-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/jsonblog/jsonblog-cli/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-blue.svg)](https://www.typescriptlang.org/)
+
+A command-line interface for JsonBlog, making it easy to generate and manage your static blog from JSON files.
 
 ## Features
 
@@ -17,17 +22,37 @@ A modern CLI tool for generating static blogs from JSON files. This tool is lang
 npm install -g jsonblog-cli
 ```
 
-## Quick Start
+## Usage
 
 ```bash
-# Create a new blog.json file
-blog init
+# Generate your blog
+jsonblog generate path/to/blog.json
 
-# Build your blog
-blog build
+# Watch for changes and regenerate
+jsonblog watch path/to/blog.json
+```
 
-# Preview locally with auto-reload
-blog serve
+## Blog Configuration
+
+Your blog configuration should be a JSON file that follows the JsonBlog schema. Here's a basic example:
+
+```json
+{
+  "site": {
+    "title": "My Blog",
+    "description": "A blog about my thoughts"
+  },
+  "basics": {
+    "name": "John Doe"
+  },
+  "posts": [
+    {
+      "title": "Hello World",
+      "content": "# My First Post\n\nWelcome to my blog!",
+      "publishedDate": "2025-02-25"
+    }
+  ]
+}
 ```
 
 ## Commands
@@ -46,7 +71,18 @@ You can use custom generators by:
 
 ## Development
 
+### Prerequisites
+
+- Node.js >= 20.0.0
+- npm
+
+### Setup
+
 ```bash
+# Clone the repository
+git clone https://github.com/jsonblog/jsonblog-cli.git
+cd jsonblog-cli
+
 # Install dependencies
 npm install
 
@@ -55,10 +91,32 @@ npm run build
 
 # Run tests
 npm test
-
-# Development mode
-npm run dev
 ```
+
+### Available Scripts
+
+- `npm run build` - Build the TypeScript code
+- `npm test` - Run tests
+- `npm run lint` - Run ESLint
+- `npm run format` - Format code with Prettier
+
+### Release Process
+
+1. Make your changes
+2. Run tests and linting: `npm test && npm run lint`
+3. Use one of the following commands to create a new version:
+   - `npm run release:patch` - Bug fixes (1.0.0 -> 1.0.1)
+   - `npm run release:minor` - New features (1.0.0 -> 1.1.0)
+   - `npm run release:major` - Breaking changes (1.0.0 -> 2.0.0)
+4. Create a new release on GitHub to trigger the publishing workflow
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## Compatibility
 
@@ -70,4 +128,4 @@ This v2 release maintains full backward compatibility with v1 while adding moder
 
 ## License
 
-ISC
+This project is licensed under the MIT License - see the LICENSE file for details.

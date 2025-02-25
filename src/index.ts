@@ -19,7 +19,7 @@ interface BlogFile {
 }
 
 interface Generator {
-  (blog: any): Promise<BlogFile[]>;
+  (blog: any, arg: string): Promise<BlogFile[]>;
 }
 
 const requireUncached = (module: string): any => {
@@ -40,7 +40,7 @@ const validateBlog = (blog: any): Promise<boolean> => {
   });
 };
 
-const build = async (generator: Generator, blog: any): Promise<void> => {
+const build = async (generator: Generator, blog: any, blogPath: string): Promise<void> => {
   try {
     const isValid = await validateBlog(blog);
     if (!isValid) {
@@ -48,7 +48,12 @@ const build = async (generator: Generator, blog: any): Promise<void> => {
       return;
     }
 
-    const files = await generator(blog);
+    console.log('Blog data:', JSON.stringify(blog, null, 2));
+    console.log('Generator type:', typeof generator);
+    
+    // Use the directory containing blog.json as the base path
+    const basePath = path.dirname(blogPath);
+    const files = await generator(blog, basePath);
 
     // Clean up build dir and make again
     await fs.remove(BUILD_PATH);
@@ -68,13 +73,13 @@ const build = async (generator: Generator, blog: any): Promise<void> => {
   }
 };
 
-const getBlog = async (): Promise<any> => {
+const getBlog = async (blogPath: string): Promise<any> => {
   try {
-    const blogPath = path.join(process.cwd(), 'blog.json');
-    const blogContent = await fs.readFile(blogPath, 'utf8');
+    const absolutePath = path.resolve(blogPath);
+    const blogContent = await fs.readFile(absolutePath, 'utf8');
     return JSON.parse(blogContent);
   } catch (error) {
-    console.error(chalk.red('Failed to read blog.json:'), error);
+    console.error(chalk.red(`Failed to read ${blogPath}:`), error);
     process.exit(1);
   }
 };
@@ -141,12 +146,13 @@ program
 program
   .command('build')
   .description('Builds your blog to /build')
-  .option('-g, --generator <name>', 'Name of the generator')
-  .action(async (options) => {
+  .argument('<blogFile>', 'Path to blog.json file')
+  .option('-g, --generator <n>', 'Name of the generator')
+  .action(async (blogFile, options) => {
     try {
       const generator = await getGenerator(options.generator);
-      const blog = await getBlog();
-      await build(generator, blog);
+      const blog = await getBlog(blogFile);
+      await build(generator, blog, blogFile);
     } catch (error) {
       console.error(chalk.red('Build command failed:'), error);
       process.exit(1);
@@ -156,23 +162,24 @@ program
 program
   .command('serve')
   .description('Runs locally on your computer')
+  .argument('<blogFile>', 'Path to blog.json file')
   .option('-p, --port <number>', 'Port to run on', '3000')
-  .option('-g, --generator <name>', 'Name of the generator')
-  .action(async (options) => {
+  .option('-g, --generator <n>', 'Name of the generator')
+  .action(async (blogFile, options) => {
     try {
       const app = express();
       const port = parseInt(options.port, 10);
       
       // Initial build
       const generator = await getGenerator(options.generator);
-      const blog = await getBlog();
-      await build(generator, blog);
+      const blog = await getBlog(blogFile);
+      await build(generator, blog, blogFile);
 
       // Serve static files
       app.use(express.static(BUILD_PATH));
 
       // Watch for changes
-      const watcher = chokidar.watch(['blog.json', '*.js'], {
+      const watcher = chokidar.watch([blogFile, '*.js'], {
         ignored: /(^|[\/\\])\../,
         persistent: true
       });
@@ -181,8 +188,8 @@ program
         console.log(chalk.blue(`File ${path} has been changed`));
         try {
           const generator = await getGenerator(options.generator);
-          const blog = await getBlog();
-          await build(generator, blog);
+          const blog = await getBlog(blogFile);
+          await build(generator, blog, blogFile);
           console.log(chalk.green('Rebuild completed'));
         } catch (error) {
           console.error(chalk.red('Rebuild failed:'), error);
