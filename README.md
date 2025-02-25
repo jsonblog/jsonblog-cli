@@ -75,6 +75,11 @@ Your blog configuration should be a JSON file that follows the JsonBlog schema. 
 }
 ```
 
+## Dependencies
+
+This project uses:
+- [jsonblog-schema](https://github.com/jsonblog/jsonblog-schema) for blog validation
+
 ## Development
 
 ### Prerequisites
