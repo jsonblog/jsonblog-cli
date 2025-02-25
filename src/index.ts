@@ -1,130 +1,65 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import fs from 'fs-extra';
+import basicGenerator from 'jsonblog-generator-boilerplate';
 import express from 'express';
-import chalk from 'chalk';
 import chokidar from 'chokidar';
 import path from 'path';
 
 // Import legacy modules using require since they're CommonJS
-const basicGenerator = require('jsonblog-generator-boilerplate');
 const schema = require('jsonblog-schema');
 
-const BUILD_PATH = path.join(process.cwd(), 'build');
+const BUILD_PATH = `${process.cwd()}/./build`;
 const DEFAULT_GENERATOR = 'jsonblog-generator-boilerplate';
 
-interface BlogFile {
-  name: string;
-  content: string;
+interface ValidationResult {
+  success: boolean;
+  error?: string;
 }
 
-interface Generator {
-  (blog: any, arg: string): Promise<BlogFile[]>;
-}
-
-interface CommandOptions {
-  generator?: string;
-  port?: string;
-}
-
-const requireUncached = (module: string): any => {
+function requireUncached(module: string) {
   delete require.cache[require.resolve(module)];
   return require(module);
-};
+}
 
-// Promisify the schema.validate function
-const validateBlog = (blog: any): Promise<boolean> => {
-  return new Promise((resolve, reject) => {
-    schema.validate(
-      blog,
-      (err: Error | null, result: { valid: boolean } | null) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result?.valid ?? false);
-        }
-      }
-    );
+const build = async (generator: any, blog: any) => {
+  schema.validateBlog(blog).then(({ success, error }: ValidationResult) => {
+    if (!success) {
+      console.error('Validation failed:', error);
+    } else {
+      const files = generator(blog);
+
+      // Clean up build dir and make again
+      fs.removeSync(BUILD_PATH);
+      fs.mkdirSync(BUILD_PATH);
+
+      // Now write files given by the generator
+      files.forEach((file: { name: string; content: string }) => {
+        fs.outputFileSync(`${BUILD_PATH}/${file.name}`, file.content, 'utf8');
+      });
+      console.log('Build completed successfully!');
+    }
   });
 };
 
-const build = async (
-  generator: Generator,
-  blog: any,
-  blogPath: string
-): Promise<void> => {
+const getBlog = (file: string) => {
   try {
-    const isValid = await validateBlog(blog);
-    if (!isValid) {
-      console.error(chalk.red('Blog validation failed'));
-      return;
-    }
-
-    console.log('Blog data:', JSON.stringify(blog, null, 2));
-    console.log('Generator type:', typeof generator);
-
-    // Use the directory containing blog.json as the base path
-    const basePath = path.dirname(blogPath);
-    const files = await generator(blog, basePath);
-
-    // Clean up build dir and make again
-    await fs.remove(BUILD_PATH);
-    await fs.mkdir(BUILD_PATH);
-
-    // Write files given by the generator
-    await Promise.all(
-      files.map(async (file) => {
-        const filePath = path.join(BUILD_PATH, file.name);
-        await fs.outputFile(filePath, file.content, 'utf8');
-      })
-    );
-
-    console.log(chalk.green('Build completed successfully'));
-  } catch (error) {
-    console.error(chalk.red('Build failed:'), error);
-  }
-};
-
-const getBlog = async (blogPath: string): Promise<any> => {
-  try {
-    const absolutePath = path.resolve(blogPath);
-    const blogContent = await fs.readFile(absolutePath, 'utf8');
-    return JSON.parse(blogContent);
-  } catch (error) {
-    console.error(chalk.red(`Failed to read ${blogPath}:`), error);
+    return require(`${process.cwd()}/${file}`);
+  } catch (e) {
+    console.error('Failed to load blog configuration:', e);
     process.exit(1);
   }
 };
 
-const getGenerator = async (name?: string): Promise<Generator> => {
-  let generator: Generator | undefined;
+const getGenerator = async (name: string) => {
+  let generator;
 
   // Try load a theme from current directory
   try {
-    generator = requireUncached(path.join(process.cwd(), 'index.js'));
-  } catch (error) {
-    console.log(chalk.yellow('No local generator found'));
-  }
-
-  const generatorName = name || DEFAULT_GENERATOR;
-
-  // require globally if not in generator directory
-  if (typeof generator !== 'function') {
-    try {
-      generator = require(generatorName);
-    } catch (error) {
-      console.log(
-        chalk.yellow(
-          'Supplied generator not found (try npm -g i jsonblog-generator-xxxxx)'
-        )
-      );
-      console.log('Falling back to default generator');
-      generator = require(DEFAULT_GENERATOR);
-    }
-  }
-
-  if (typeof generator !== 'function') {
-    throw new Error('Failed to load a valid generator');
+    generator = requireUncached(`${process.cwd()}/index.js`);
+  } catch (e) {
+    console.log('Using default generator');
+    generator = basicGenerator;
   }
 
   return generator;
@@ -133,91 +68,62 @@ const getGenerator = async (name?: string): Promise<Generator> => {
 const program = new Command();
 
 program
-  .name('blog')
-  .description('A CLI tool to generate static blogs from JSON files')
-  .version('2.0.0');
+  .name('jsonblog')
+  .description('CLI tool for JsonBlog')
+  .version('2.3.0');
 
 program
   .command('init')
-  .description('Creates an example blog.json')
-  .action(async () => {
-    const blogPath = path.join(process.cwd(), 'blog.json');
-
-    if (await fs.pathExists(blogPath)) {
-      console.log(
-        chalk.yellow('Warning: blog.json already exists. Overwriting...')
-      );
-    }
-
-    await fs.writeFile(
-      blogPath,
-      JSON.stringify(schema.example, null, 2),
-      'utf8'
-    );
-    console.log(chalk.green('Created file blog.json'));
+  .description('Create an example blog.json')
+  .action(() => {
+    const samplePath = path.join(__dirname, '..', 'samples', 'blog.json');
+    const targetPath = path.join(process.cwd(), 'blog.json');
+    fs.copyFileSync(samplePath, targetPath);
+    console.log('Created blog.json with example content');
   });
 
 program
   .command('build')
-  .description('Builds your blog to /build')
-  .argument('<blogFile>', 'Path to blog.json file')
-  .option('-g, --generator <n>', 'Name of the generator')
-  .action(async (blogFile: string, options: CommandOptions) => {
-    try {
-      const generator = await getGenerator(options.generator);
-      const blog = await getBlog(blogFile);
-      await build(generator, blog, blogFile);
-    } catch (error) {
-      console.error(chalk.red('Build command failed:'), error);
-      process.exit(1);
-    }
+  .description('Build the blog')
+  .option('-g, --generator <name>', 'Generator to use', DEFAULT_GENERATOR)
+  .argument('[config]', 'Path to blog config file', 'blog.json')
+  .action(async (config, options) => {
+    const blog = getBlog(config);
+    const generator = await getGenerator(options.generator);
+    await build(generator, blog);
   });
 
 program
   .command('serve')
-  .description('Runs locally on your computer')
-  .argument('<blogFile>', 'Path to blog.json file')
-  .option('-p, --port <number>', 'Port to run on', '3000')
-  .option('-g, --generator <n>', 'Name of the generator')
-  .action(async (blogFile: string, options: CommandOptions) => {
-    try {
-      const app = express();
-      const port = parseInt(options.port || '3000', 10);
+  .description('Serve the blog')
+  .option('-p, --port <number>', 'Port to serve on', '3000')
+  .action((options) => {
+    const app = express();
+    app.use(express.static(BUILD_PATH));
+    app.listen(options.port, () => {
+      console.log(`Serving blog at http://localhost:${options.port}`);
+    });
+  });
 
-      // Initial build
+program
+  .command('watch')
+  .description('Watch for changes and rebuild')
+  .option('-g, --generator <name>', 'Generator to use', DEFAULT_GENERATOR)
+  .argument('[config]', 'Path to blog config file', 'blog.json')
+  .action(async (config, options) => {
+    const watcher = chokidar.watch([config, 'content/**/*', 'templates/**/*'], {
+      ignored: /(^|[\/\\])\../,
+      persistent: true
+    });
+
+    console.log(`Watching ${config} and content directory for changes...`);
+    
+    watcher.on('change', async (path) => {
+      console.log(`File ${path} has been changed`);
+      const blog = getBlog(config);
       const generator = await getGenerator(options.generator);
-      const blog = await getBlog(blogFile);
-      await build(generator, blog, blogFile);
-
-      // Serve static files
-      app.use(express.static(BUILD_PATH));
-
-      // Watch for changes
-      const watcher = chokidar.watch([blogFile, '*.js'], {
-        ignored: /(^|[\/\\])\../,
-        persistent: true,
-      });
-
-      watcher.on('change', async (watchPath: string) => {
-        console.log(chalk.blue(`File ${watchPath} has been changed`));
-        try {
-          const generator = await getGenerator(options.generator);
-          const blog = await getBlog(blogFile);
-          await build(generator, blog, blogFile);
-          console.log(chalk.green('Rebuild completed'));
-        } catch (error) {
-          console.error(chalk.red('Rebuild failed:'), error);
-        }
-      });
-
-      app.listen(port, () => {
-        console.log(chalk.green(`Server running at http://localhost:${port}`));
-        console.log(chalk.blue('Watching for changes...'));
-      });
-    } catch (error) {
-      console.error(chalk.red('Serve command failed:'), error);
-      process.exit(1);
-    }
+      await build(generator, blog);
+    });
   });
 
 program.parse();
