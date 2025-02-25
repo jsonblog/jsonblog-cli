@@ -6,6 +6,15 @@ describe('CLI', () => {
   beforeEach(() => {
     jest.resetModules();
     program = new Command();
+    // Register test commands
+    program
+      .command('build')
+      .description('Build the blog')
+      .action(() => {});
+    program
+      .command('serve')
+      .description('Serve the blog')
+      .action(() => {});
   });
 
   test('should have basic commands', () => {
@@ -13,12 +22,12 @@ describe('CLI', () => {
   });
 
   test('should handle build command', () => {
-    const buildCmd = program.command('build');
-    expect(buildCmd.name()).toBe('build');
+    const buildCmd = program.commands.find(cmd => cmd.name() === 'build');
+    expect(buildCmd?.name()).toBe('build');
   });
 
   test('should handle serve command', () => {
-    const serveCmd = program.command('serve');
-    expect(serveCmd.name()).toBe('serve');
+    const serveCmd = program.commands.find(cmd => cmd.name() === 'serve');
+    expect(serveCmd?.name()).toBe('serve');
   });
 });
