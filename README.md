@@ -32,18 +32,101 @@ jsonblog generate path/to/blog.json
 jsonblog watch path/to/blog.json
 ```
 
-## Blog Configuration
+## JsonBlog Schema
 
-Your blog configuration should be a JSON file that follows the JsonBlog schema. Here's a basic example:
+The JsonBlog schema is a community-driven format for blog content that emphasizes portability, extensibility, and content ownership. Here's the current schema (v1.0.0):
+
+```typescript
+interface Blog {
+  // Core blog information
+  site: {
+    title: string;
+    description?: string;
+    image?: string;
+    email?: string;
+    phone?: string;
+    url?: string;
+    summary?: string;
+    profiles?: {
+      network: string;
+      username?: string;
+      url?: string;
+    }[];
+  };
+
+  // Author information
+  basics: {
+    name: string;
+    label?: string;
+    image?: string;
+    email?: string;
+    phone?: string;
+    url?: string;
+    summary?: string;
+    location?: {
+      address?: string;
+      postalCode?: string;
+      city?: string;
+      countryCode?: string;
+      region?: string;
+    };
+    profiles?: {
+      network: string;
+      username?: string;
+      url?: string;
+    }[];
+  };
+
+  // Blog posts
+  posts: {
+    title: string;
+    source?: string;
+    description?: string;
+    position?: string;
+    url?: string;
+    startDate?: string; // YYYY-MM-DD
+    endDate?: string; // YYYY-MM-DD
+    summary?: string;
+    highlights?: string[];
+  }[];
+}
+```
+
+### Schema Versioning
+
+The schema follows semantic versioning:
+- MAJOR: Breaking changes to required fields
+- MINOR: New optional fields or features
+- PATCH: Documentation updates or bug fixes
+
+Current stable version: 1.0.0
+
+## Example Blog Configuration
+
+Here's a basic example of a blog configuration file:
 
 ```json
 {
   "site": {
     "title": "My Blog",
-    "description": "A blog about my thoughts"
+    "description": "A blog about my thoughts",
+    "url": "https://myblog.com",
+    "profiles": [
+      {
+        "network": "twitter",
+        "username": "myblog",
+        "url": "https://twitter.com/myblog"
+      }
+    ]
   },
   "basics": {
-    "name": "John Doe"
+    "name": "John Doe",
+    "label": "Tech Blogger",
+    "summary": "I write about technology and life",
+    "location": {
+      "city": "San Francisco",
+      "countryCode": "US"
+    }
   },
   "posts": [
     {
@@ -52,23 +135,8 @@ Your blog configuration should be a JSON file that follows the JsonBlog schema. 
       "publishedDate": "2025-02-25"
     },
     {
-      "title": "Plain Text Post",
-      "content": "Just a simple text post.\nNo special formatting needed.",
-      "publishedDate": "2025-02-25"
-    },
-    {
-      "title": "HTML Post",
-      "content": "<h1>Direct HTML</h1><p>Write HTML directly if you prefer!</p>",
-      "publishedDate": "2025-02-25"
-    },
-    {
       "title": "Remote Content",
       "contentUrl": "https://example.com/posts/remote-post.md",
-      "publishedDate": "2025-02-25"
-    },
-    {
-      "title": "IPFS Content",
-      "contentUrl": "ipfs://QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG",
       "publishedDate": "2025-02-25"
     }
   ]
@@ -126,6 +194,7 @@ npm test
 
 ## Related Projects
 
+- [jsonblog-schema](https://github.com/jsonblog/jsonblog-schema) - The schema definition and validation library
 - [jsonblog-generator-boilerplate](https://github.com/jsonblog/jsonblog-generator-boilerplate) - The core generator used by this CLI
 
 ## Creating Your Own Generator
