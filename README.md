@@ -5,16 +5,16 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-blue.svg)](https://www.typescriptlang.org/)
 
-A command-line interface for JsonBlog, making it easy to generate and manage your static blog from JSON files.
+A powerful, flexible static blog generator that puts content first. Write your blog posts in Markdown, manage them in JSON, and deploy anywhere.
 
-## Features
+## Why JsonBlog?
 
-- Generate static blogs from JSON files
-- Use custom generators or the default boilerplate
-- Live preview with auto-reload
-- TypeScript support
-- Modern Node.js practices
-- Backward compatible with v1
+- **Content Freedom**: Your content, your way. Store posts inline in JSON, as local files, remote URLs, or even on IPFS
+- **Format Flexibility**: Content can be Markdown, plain text, or even HTML - you choose what works best
+- **Zero Lock-in**: All content is pure JSON and text - no proprietary formats or databases
+- **Flexible Deployment**: Generate static HTML that can be hosted anywhere - GitHub Pages, Netlify, IPFS, or your own server
+- **Developer Friendly**: Built with TypeScript, well-documented, and extensible
+- **Modern Stack**: Uses [jsonblog-generator-boilerplate](https://github.com/jsonblog/jsonblog-generator-boilerplate) under the hood for clean, modern HTML output
 
 ## Installation
 
@@ -47,27 +47,33 @@ Your blog configuration should be a JSON file that follows the JsonBlog schema. 
   },
   "posts": [
     {
-      "title": "Hello World",
+      "title": "Markdown Post",
       "content": "# My First Post\n\nWelcome to my blog!",
+      "publishedDate": "2025-02-25"
+    },
+    {
+      "title": "Plain Text Post",
+      "content": "Just a simple text post.\nNo special formatting needed.",
+      "publishedDate": "2025-02-25"
+    },
+    {
+      "title": "HTML Post",
+      "content": "<h1>Direct HTML</h1><p>Write HTML directly if you prefer!</p>",
+      "publishedDate": "2025-02-25"
+    },
+    {
+      "title": "Remote Content",
+      "contentUrl": "https://example.com/posts/remote-post.md",
+      "publishedDate": "2025-02-25"
+    },
+    {
+      "title": "IPFS Content",
+      "contentUrl": "ipfs://QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG",
       "publishedDate": "2025-02-25"
     }
   ]
 }
 ```
-
-## Commands
-
-- `blog init` - Creates an example blog.json file
-- `blog build [-g generator-name]` - Builds your blog to /build directory
-- `blog serve [-p port] [-g generator-name]` - Runs a local server with live reload
-
-## Using Custom Generators
-
-You can use custom generators by:
-
-1. Creating a local generator in your project directory
-2. Installing a generator globally (e.g., `npm install -g jsonblog-generator-xxxxx`)
-3. Specifying a generator with the `-g` flag
 
 ## Development
 
@@ -118,14 +124,27 @@ npm test
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## Compatibility
+## Related Projects
 
-This v2 release maintains full backward compatibility with v1 while adding modern features and improvements. Your existing blog.json files and generators will continue to work as before.
+- [jsonblog-generator-boilerplate](https://github.com/jsonblog/jsonblog-generator-boilerplate) - The core generator used by this CLI
 
-## Requirements
+## Creating Your Own Generator
 
-- Node.js >= 18.0.0
+Want to create your own blog theme? It's easy! A generator is just a package that takes your blog content and generates HTML using your own templates and styles.
+
+1. Fork the [generator-boilerplate](https://github.com/jsonblog/jsonblog-generator-boilerplate) repository
+2. Customize the templates in the `templates` directory
+3. Modify the styles in `assets/main.css`
+4. Update the generator logic in `src/index.ts` if needed
+5. Publish your generator to npm as `jsonblog-generator-yourname`
+
+Your generator just needs to export a function that takes a blog config and outputs HTML files. The boilerplate handles all the complex stuff like Markdown rendering and file management.
+
+Example generators:
+- `jsonblog-generator-minimal` - A minimal, typography-focused theme
+- `jsonblog-generator-bootstrap` - A Bootstrap-based theme
+- Create your own!
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
