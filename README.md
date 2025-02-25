@@ -32,6 +32,8 @@ jsonblog generate path/to/blog.json
 jsonblog watch path/to/blog.json
 ```
 
+Hosted example - [https://lordajax.com/json-blog-20.html](https://lordajax.com/json-blog-20.html) 
+
 ## JsonBlog Schema
 
 The JsonBlog schema is a community-driven format for blog content that emphasizes portability, extensibility, and content ownership. Here's the current schema (v1.0.0):
