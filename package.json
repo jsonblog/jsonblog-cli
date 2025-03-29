@@ -1,6 +1,6 @@
 {
   "name": "jsonblog-cli",
-  "version": "2.7.0",
+  "version": "2.8.0",
   "description": "CLI tool for JsonBlog",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -48,7 +48,7 @@
     "commander": "^11.1.0",
     "express": "^4.18.2",
     "fs-extra": "^11.2.0",
-    "jsonblog-generator-boilerplate": "1.7.0",
+    "jsonblog-generator-boilerplate": "1.8.0",
     "jsonblog-schema": "2.1.0",
     "pino": "^9.6.0",
     "pino-pretty": "^13.0.0"
